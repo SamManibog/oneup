@@ -2,6 +2,9 @@ local Popup = require("oneup.popup")
 local utils = require("oneup.utils")
 
 ---@class PromptPopup: Popup
+---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
+---@field on_confirm fun(text:string),                  function used to process input
+---@field private text string[]
 local PromptPopup = {}
 PromptPopup.__index = PromptPopup
 setmetatable(PromptPopup, Popup)
@@ -33,9 +36,12 @@ function PromptPopup:new(opts, enter)
     table.insert(base_opts.text,"")
 
     ---@type PromptPopup
-    local base_popup = Popup:new(base_opts, enter) ---@diagnostic disable-line
+    local out = Popup:new(base_opts, enter) ---@diagnostic disable-line: assign-type-mismatch
+    out.text = opts.text
+    out.verify_input = opts.verify_input
+    out.on_confirm = opts.on_confirm
 
-    local buf = base_popup:buf_id()
+    local buf = out:buf_id()
     utils.set_buf_opts(
         buf,
         {
@@ -45,13 +51,13 @@ function PromptPopup:new(opts, enter)
     )
     vim.fn.prompt_setprompt(buf, opts.prompt or "")
     vim.fn.prompt_setcallback(buf, function (text)
-        base_popup:set_text(opts.text)
-        if opts.verify_input ~= nil then
-            if not opts.verify_input(text) then
+        Popup.set_text(out, out.text) ---@diagnostic disable-line: invisible
+        if out.verify_input ~= nil then
+            if not out.verify_input(text) then
                 vim.api.nvim_buf_set_lines(
                     buf,
                     ---@diagnostic disable-next-line: invisible
-                    #vim.api.nvim_buf_get_lines(base_popup:buf_id(), 0, -1, false),
+                    #vim.api.nvim_buf_get_lines(out:buf_id(), 0, -1, false),
                     -1,
                     false,
                     {}
@@ -61,8 +67,8 @@ function PromptPopup:new(opts, enter)
                 return
             end
         end
-        opts.on_confirm(text)
-        base_popup:close()
+        out.on_confirm(text)
+        out:close()
     end)
     vim.cmd("startinsert")
     vim.schedule(function ()
@@ -80,17 +86,24 @@ function PromptPopup:new(opts, enter)
             },
             {
                 callback = function ()
-                    base_popup:close()
+                    out:close()
                 end
             }
         )
         ---@diagnostic disable-next-line: invisible
-        base_popup.close_aucmd = close_aucmd
+        out.close_aucmd = close_aucmd
     end)
 
-    setmetatable(base_popup, self)
+    setmetatable(out, self)
 
-    return base_popup
+    return out
+end
+
+---sets the text of the prompt popup
+---@param text string[] the text to set for the popup as a list of lines
+function PromptPopup:set_text(text)
+    self.text = text
+    Popup.set_text(self, text)
 end
 
 return PromptPopup

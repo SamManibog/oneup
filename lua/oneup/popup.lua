@@ -154,7 +154,7 @@ function Popup:new(opts, enter)
     elseif opts.height:sub(-1) == "%" then
         height_mult = tonumber(opts.height:sub(1, -2)) / 100
     else
-        height = math.floor(tonumber(opts.height)) ---@diagnostic disable-line invalid-cast
+        height = math.floor(tonumber(opts.height)) ---@diagnostic disable-line:param-type-mismatch
         if height == nil then error("height '" .. opts.height .. "' is invalid.") end
     end
 
@@ -173,7 +173,7 @@ function Popup:new(opts, enter)
     elseif opts.width:sub(-1) == "%" then
         width_mult = tonumber(opts.width:sub(1, -2)) / 100
     else
-        width = math.floor(tonumber(opts.width)) ---@diagnostic disable-line invalid-cast
+        width = math.floor(tonumber(opts.width)) ---@diagnostic disable-line:param-type-mismatch
         if width == nil then error("width '" .. opts.width .. "' is invalid.") end
     end
 

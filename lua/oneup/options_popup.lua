@@ -76,4 +76,7 @@ function OptionsPopup:get_option()
     return self.options[vim.api.nvim_win_get_cursor(0)[1]]
 end
 
+OptionsPopup.set_text = nil
+OptionsPopup.set_modifiable = nil
+
 return OptionsPopup
