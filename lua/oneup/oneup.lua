@@ -1,7 +1,6 @@
 local M = {}
 
 local utils = require("config.utils")
-local Popup = require("oneup.popup")
 
 ---@class AdvInputPopup
 ---@field private prompt_buf_id integer     buf id for the prompt buffer
@@ -525,162 +524,7 @@ local function gen_menu_navigation_binds(popup, items, upbinds, downbinds, state
 end
 ]==]
 
----@class OptionsMenuOpts
----@field title string?         the title to display on the popup, useless if border is not true
----@field width integer?        the minimum width excluding the border
----@field height integer?       the minimum height excluding the border
----@field border boolean?       border?
----@field persistent boolean?   Whether or not the popup will persist once window has been exited
----@field stayOpen boolean?     Whether or not the popup will persist by default when an action has been executed
----@field closeBinds string[]?  A list of keybinds that will close the menu
----@field selectBinds string[]?  A list of keybinds that will run the highlighted action
-
----@param actions { bind: string?, desc: string, persist: boolean|nil, callback: function, [any]: any }[] a list of tables describing the available actions
----@param opts OptionsMenuOpts the options for the given popup
----@param enter boolean whether or not to immediately focus the popup
-function M.new_options_menu(actions, opts, enter)
-    local menuText = {}
-
-    --determine max length of keybinds to allow right alignment
-    local keybind_length = 0
-    for _, action in pairs(actions) do
-        if action.bind == nil then break end
-
-        keybind_length = math.max(keybind_length, string.len(action.bind))
-    end
-
-    local height = 0
-    local actionList = {}
-    local bindless = true
-    for _, action in pairs(actions) do
-        if action.bind ~= nil then
-            bindless = false
-            break
-        end
-    end
-    for _, action in pairs(actions) do
-        table.insert(actionList, {
-            callback = action.callback,
-            persist = action.persist
-        })
-
-        if bindless then
-            table.insert(menuText, action.desc)
-        else
-            if action.bind == nil then
-                local padding = string.rep(" ", keybind_length)
-                table.insert(menuText, padding .. " - " .. action.desc)
-            else
-                local padding = string.rep(" ", keybind_length - string.len(action.bind))
-                table.insert(menuText, padding .. action.bind .. " - " .. action.desc)
-            end
-        end
-
-        height = height + 1
-    end
-
-    --@type PopupOpts
-    local popupOpts = {
-        title = opts.title,
-        width = opts.width,
-        height = opts.height,
-        border = opts.border,
-        persistent = opts.persistent,
-
-        text = menuText,
-    }
-
-    popupOpts["text"] = menuText
-
-    local p = Popup:new(popupOpts, enter)
-
-    local ns = vim.api.nvim_create_namespace("oneup_menu")
-
-    vim.api.nvim_set_option_value(
-        "cursorline",
-        true,
-        {
-           win = p:win_id()
-        }
-    )
-
-    vim.api.nvim_set_hl(
-        ns,
-        "CursorLine",
-        { link = "Visual" }
-    )
-
-    vim.api.nvim_win_set_hl_ns(p:win_id(), ns)
-
-    for _, action in pairs(actions) do
-        if action.bind == nil then break end
-
-        vim.api.nvim_buf_set_keymap(
-            p:buf_id(),
-            "n",
-            action.bind,
-            "",
-            {
-                silent = true,
-                callback = function()
-                    action.callback()
-
-                    local shouldClose = true
-                    if opts.stayOpen == true then shouldClose = false end
-                    if action.persist ~= nil then shouldClose = not action.persist end
-
-                    if shouldClose then
-                        p:close()
-                    end
-                end
-            }
-        )
-    end
-
-    if opts.closeBinds ~= nil then
-        for _, closer in pairs(opts.closeBinds) do
-            vim.api.nvim_buf_set_keymap(
-                p:buf_id(),
-                "n",
-                closer,
-                "",
-                {
-                    silent = true,
-                    callback = function() p:close() end
-                }
-            )
-        end
-    end
-
-    if opts.selectBinds ~= nil then
-        for _, selector in pairs(opts.selectBinds) do
-            vim.api.nvim_buf_set_keymap(
-                p:buf_id(),
-                "n",
-                selector,
-                "",
-                {
-                    silent = true,
-                    callback = function()
-                        local action = actionList[vim.api.nvim_win_get_cursor(0)[1]]
-                        action.callback()
-
-                        local shouldClose = true
-                        if opts.stayOpen == true then shouldClose = false end
-                        if action.persist ~= nil then shouldClose = not action.persist end
-
-                        if shouldClose then
-                            p:close()
-                        end
-                    end
-                }
-            )
-        end
-    end
-
-    return p
-end
-
+--[[
 ---@class OptionsPreviewMenuOpts
 ---@field height integer            the height for both popups
 ---@field menu_width integer        the menu width
@@ -722,8 +566,8 @@ function M.new_options_preview_menu(actions, opts, enter)
     local previewPopup = Popup:new({
         text = initText,
         title = opts.preview_title,
-        width = opts.preview_width,
-        height = opts.height,
+        width = tostring(opts.preview_width),
+        height = tostring(opts.height),
         border = opts.border,
         persistent = true,
         focusable = false
@@ -806,5 +650,6 @@ function M.new_options_preview_menu(actions, opts, enter)
 
     return optionsPopup
 end
+]]
 
 return M

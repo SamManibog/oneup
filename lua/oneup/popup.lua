@@ -5,8 +5,8 @@ local utils = require("oneup.utils")
 ---@field title string?         the title to display on the popup, useless if border is not true
 ---@field width string?         the width of the popup (may be a percent) sets width based on text if nil
 ---@field height string?        the height of the popup (may be a percent) sets height based on text if nil
----@field min_width integer?    the absolute minimum width for the popup. useless if width is not a percentage
----@field min_height integer?   the absolute minimum height for the popup. useless if height is not a percentage
+---@field min_width integer?    the absolute minimum width for the popup. useless if width is a regular number
+---@field min_height integer?   the absolute minimum height for the popup. useless if height is a regular number
 ---@field border boolean?       border?
 ---@field focusable boolean?    whether the popup may be focused (defaults to true)
 ---@field modifiable boolean?   whether or not the popup's buffer is modifiable
@@ -27,6 +27,7 @@ local utils = require("oneup.utils")
 ---@field private border boolean
 ---@field private on_close function
 local Popup = {}
+Popup.__index = Popup
 
 function Popup:close()
     if not self.closed then
@@ -85,12 +86,12 @@ end
 ---sets the text of the popup
 ---@param text string[]
 function Popup:set_text(text)
-    local original_mod = self:is_modifiable()
+    local original_mod = self:get_modifiable()
     self:set_modifiable(true)
 
     self.text = text
     vim.api.nvim_buf_set_lines(
-        self.buf_id,
+        self.buffer_id,
         0,
         -1,
         true,
@@ -124,7 +125,7 @@ end
 
 ---returns whether or not the popup's buffer is modifiable
 ---@return boolean modifiable whether or not the buffer is modifiable
-function Popup:is_modifiable()
+function Popup:get_modifiable()
     return vim.api.nvim_get_option_value(
         "modifiable",
         {
@@ -146,7 +147,10 @@ function Popup:new(opts, enter)
     local width_mult, height_mult
     ---set height based on text
     if opts.height == nil then
-        height = #opts.text
+        height = math.max(#opts.text, 1)
+        if opts.min_height ~= nil then
+            height = math.max(height, opts.min_height)
+        end
     elseif opts.height:sub(-1) == "%" then
         height_mult = tonumber(opts.height:sub(1, -2)) / 100
     else
@@ -162,6 +166,9 @@ function Popup:new(opts, enter)
             for _, line in pairs(opts.text) do
                 width = math.max(width, #line)
             end
+        end
+        if opts.min_width ~= nil then
+            width = math.max(width, opts.min_width)
         end
     elseif opts.width:sub(-1) == "%" then
         width_mult = tonumber(opts.width:sub(1, -2)) / 100
@@ -230,14 +237,14 @@ function Popup:new(opts, enter)
     if not opts.persistent then
         close_aucmd = vim.api.nvim_create_autocmd(
             {
-                "BufEnter",
+                --[["BufEnter",
                 "UIEnter",
                 "TabEnter",
                 "WinEnter",
                 "BufHidden",
-                "BufWipeout",
+                "BufWipeout",]]
                 "BufLeave",
-                "BufWinLeave",
+                --"BufWinLeave",
             },
             {
                 callback = function ()
@@ -274,8 +281,8 @@ function Popup:new(opts, enter)
         border = opts.border,
         on_close = opts.on_close,
     }
-    setmetatable(out, Popup)
-    self.__index = self
+
+    setmetatable(out, self)
     out:resize()
 
     return out
@@ -304,6 +311,18 @@ function Popup:set_keymap(mode, lhs, rhs, opts)
         logical_rhs,
         logical_opts
     )
+end
+
+---returns the exact width of the popup
+---@return integer width
+function Popup:width()
+    return vim.api.nvim_win_get_config(self.window_id).width
+end
+
+---returns the exact height of the popup
+---@return integer height
+function Popup:height()
+    return vim.api.nvim_win_get_config(self.window_id).height
 end
 
 return Popup

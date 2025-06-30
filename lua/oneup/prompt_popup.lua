@@ -1,12 +1,12 @@
 local Popup = require("oneup.popup")
 local utils = require("oneup.utils")
 
+---@class PromptPopup: Popup
+local PromptPopup = {}
+PromptPopup.__index = PromptPopup
+setmetatable(PromptPopup, Popup)
 
----@class InputPopup: Popup
-local InputPopup = {}
-setmetatable(InputPopup, getmetatable(Popup))
-
----@class InputPopupOpts
+---@class PromptPopupOpts
 ---@field text string[]                                 text to display on the popup as a list of lines
 ---@field title string?                                 the title to display on the popup, useless if border is not true
 ---@field width string?                                 the width of the popup
@@ -16,10 +16,10 @@ setmetatable(InputPopup, getmetatable(Popup))
 ---@field on_confirm fun(text:string),                  function used to process input
 ---@field prompt string?                                possible prompt for input
 
----@param opts InputPopupOpts popup options
+---@param opts PromptPopupOpts popup options
 ---@param enter boolean whether or not to immediately focus the popup
----@return InputPopup
-function InputPopup:new(opts, enter)
+---@return PromptPopup
+function PromptPopup:new(opts, enter)
     ---@type PopupOpts
     local base_opts = {
         text = opts.text,
@@ -32,7 +32,7 @@ function InputPopup:new(opts, enter)
 
     table.insert(base_opts.text,"")
 
-    ---@type InputPopup
+    ---@type PromptPopup
     local base_popup = Popup:new(base_opts, enter) ---@diagnostic disable-line
 
     local buf = base_popup:buf_id()
@@ -45,6 +45,7 @@ function InputPopup:new(opts, enter)
     )
     vim.fn.prompt_setprompt(buf, opts.prompt or "")
     vim.fn.prompt_setcallback(buf, function (text)
+        base_popup:set_text(opts.text)
         if opts.verify_input ~= nil then
             if not opts.verify_input(text) then
                 vim.api.nvim_buf_set_lines(
@@ -87,9 +88,9 @@ function InputPopup:new(opts, enter)
         base_popup.close_aucmd = close_aucmd
     end)
 
-    self.__index = self
+    setmetatable(base_popup, self)
 
     return base_popup
 end
 
-return InputPopup
+return PromptPopup
