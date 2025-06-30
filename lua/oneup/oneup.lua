@@ -600,7 +600,7 @@ function M.new_options_menu(actions, opts, enter)
         "cursorline",
         true,
         {
-           win = p:get_win_id()
+           win = p:win_id()
         }
     )
 
@@ -610,13 +610,13 @@ function M.new_options_menu(actions, opts, enter)
         { link = "Visual" }
     )
 
-    vim.api.nvim_win_set_hl_ns(p:get_win_id(), ns)
+    vim.api.nvim_win_set_hl_ns(p:win_id(), ns)
 
     for _, action in pairs(actions) do
         if action.bind == nil then break end
 
         vim.api.nvim_buf_set_keymap(
-            p:get_buf_id(),
+            p:buf_id(),
             "n",
             action.bind,
             "",
@@ -640,7 +640,7 @@ function M.new_options_menu(actions, opts, enter)
     if opts.closeBinds ~= nil then
         for _, closer in pairs(opts.closeBinds) do
             vim.api.nvim_buf_set_keymap(
-                p:get_buf_id(),
+                p:buf_id(),
                 "n",
                 closer,
                 "",
@@ -655,7 +655,7 @@ function M.new_options_menu(actions, opts, enter)
     if opts.selectBinds ~= nil then
         for _, selector in pairs(opts.selectBinds) do
             vim.api.nvim_buf_set_keymap(
-                p:get_buf_id(),
+                p:buf_id(),
                 "n",
                 selector,
                 "",
@@ -740,7 +740,7 @@ function M.new_options_preview_menu(actions, opts, enter)
         menu_row = math.max(1, menu_row)
 
         vim.api.nvim_win_set_config(
-            optionsPopup:get_win_id(),
+            optionsPopup:win_id(),
             {
                 relative = "editor",
                 row = menu_row,
@@ -754,7 +754,7 @@ function M.new_options_preview_menu(actions, opts, enter)
         if opts.border then prev_col = prev_col + 1 end
 
         vim.api.nvim_win_set_config(
-            previewPopup:get_win_id(),
+            previewPopup:win_id(),
             {
                 relative = "editor",
                 row = menu_row,

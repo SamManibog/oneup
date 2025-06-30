@@ -1,5 +1,5 @@
 local Popup = require("oneup.popup")
-local utils = require("config.utils")
+local utils = require("oneup.utils")
 
 
 ---@class InputPopup: Popup
@@ -9,35 +9,33 @@ setmetatable(InputPopup, getmetatable(Popup))
 ---@class InputPopupOpts
 ---@field text string[]                                 text to display on the popup as a list of lines
 ---@field title string?                                 the title to display on the popup, useless if border is not true
----@field width integer?                                the minimum width excluding the border
+---@field width string?                                 the width of the popup
+---@field min_width integer?                            the absolute minimum width
 ---@field border boolean?                               border?
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
 ---@field prompt string?                                possible prompt for input
 
----@param opts InputPopupOpts
+---@param opts InputPopupOpts popup options
 ---@param enter boolean whether or not to immediately focus the popup
 ---@return InputPopup
 function InputPopup:new(opts, enter)
-    local base_opts = {}
+    ---@type PopupOpts
+    local base_opts = {
+        text = opts.text,
+        title = opts.title,
+        width = opts.width,
+        min_width = opts.min_width,
+        border = opts.border,
+        persistent = true,
+    }
 
-    base_opts.text = opts.text
     table.insert(base_opts.text,"")
-    if opts.title ~= nil then
-        base_opts.title = opts.title
-    end
-    if opts.width ~= nil then
-        base_opts.width = opts.width
-    end
-    if opts.border ~= nil then
-        base_opts.border = opts.border
-    end
-    base_opts.persistent = true
 
     ---@type InputPopup
     local base_popup = Popup:new(base_opts, enter) ---@diagnostic disable-line
 
-    local buf = base_popup:get_buf_id()
+    local buf = base_popup:buf_id()
     utils.set_buf_opts(
         buf,
         {
@@ -46,13 +44,13 @@ function InputPopup:new(opts, enter)
         }
     )
     vim.fn.prompt_setprompt(buf, opts.prompt or "")
-    vim.fn.prompt_setcallback(buf,function (text)
+    vim.fn.prompt_setcallback(buf, function (text)
         if opts.verify_input ~= nil then
             if not opts.verify_input(text) then
                 vim.api.nvim_buf_set_lines(
                     buf,
                     ---@diagnostic disable-next-line: invisible
-                    #vim.api.nvim_buf_get_lines(base_popup:get_buf_id(), 0, -1, false),
+                    #vim.api.nvim_buf_get_lines(base_popup:buf_id(), 0, -1, false),
                     -1,
                     false,
                     {}
@@ -88,6 +86,8 @@ function InputPopup:new(opts, enter)
         ---@diagnostic disable-next-line: invisible
         base_popup.close_aucmd = close_aucmd
     end)
+
+    self.__index = self
 
     return base_popup
 end
