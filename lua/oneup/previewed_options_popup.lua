@@ -85,6 +85,7 @@ function PreviewedOptionsPopup:new(opts, enter)
 
     optsPopup.preview_popup = prevPopup
     optsPopup.border = opts.border
+    if opts.border == nil then optsPopup.border = true end
     optsPopup.on_close = function () ---@diagnostic disable-line:invisible
         prevPopup:close()
         if optsPopup.update_aucmd ~= nil then ---@diagnostic disable-line:invisible
@@ -128,7 +129,7 @@ function PreviewedOptionsPopup:resize()
     local prev_width = prev_win_cfg.width
     if self.preview_popup.width_mult ~= nil then
         prev_width = math.floor( (vim.o.columns * self.preview_popup.width_mult) + 0.5)
-        prev_width = math.max(opts_width, self.preview_popup.min_width)
+        prev_width = math.max(prev_width, self.preview_popup.min_width)
     end
 
     local width = opts_width + prev_width + 1
