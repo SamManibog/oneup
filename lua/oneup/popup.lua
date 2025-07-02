@@ -141,6 +141,7 @@ function Popup:new(opts, enter)
     if opts.modifiable == nil then opts.modifiable = false end
     if opts.focusable == nil then opts.focusable = true end
     if opts.border == nil then opts.border = true end
+    if opts.persistent == nil then opts.persistent = false end
 
     local width = 40
     local height = 40

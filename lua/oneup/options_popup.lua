@@ -3,7 +3,7 @@ local Popup = require("oneup.popup")
 ---@alias Option { text: string, [any]: any }
 
 ---@class OptionsPopup: Popup
----@field options Option[]
+---@field private options Option[]
 local OptionsPopup = {}
 OptionsPopup.__index = OptionsPopup
 setmetatable(OptionsPopup, Popup)
@@ -47,7 +47,7 @@ function OptionsPopup:new(opts, enter)
     local p = Popup:new(popupOpts, enter)
     p.options = opts.options
 
-    local ns = vim.api.nvim_create_namespace("oneup_menu")
+    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
 
     vim.api.nvim_set_option_value(
         "cursorline",
