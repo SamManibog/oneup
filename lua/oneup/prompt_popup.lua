@@ -7,14 +7,7 @@ local utils = require("oneup.utils")
 ---@field private text string[]
 local PromptPopup = {}
 PromptPopup.__index = PromptPopup
-setmetatable(PromptPopup, {
-    __index = Popup,
-    __call = function (cls, ...)
-    local self = setmetatable({}, cls)
-    self:new(...)
-    return self
-  end,
-})
+setmetatable(PromptPopup, Popup)
 
 ---@class PromptPopupOpts
 ---@field text string[]                                 text to display on the popup as a list of lines

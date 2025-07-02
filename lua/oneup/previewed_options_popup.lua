@@ -10,14 +10,7 @@ local OptionsPopup = require("oneup.options_popup")
 ---@field private options PreviewedOption[]
 local PreviewedOptionsPopup = {}
 PreviewedOptionsPopup.__index = PreviewedOptionsPopup
-setmetatable(PreviewedOptionsPopup, {
-    __index = OptionsPopup,
-    __call = function (cls, ...)
-    local self = setmetatable({}, cls)
-    self:new(...)
-    return self
-  end,
-})
+setmetatable(PreviewedOptionsPopup, OptionsPopup)
 
 ---@class PreviewedOptionsPopupPreviewOpts
 ---@field title string?         the title to display on the popup, useless if border is not true
