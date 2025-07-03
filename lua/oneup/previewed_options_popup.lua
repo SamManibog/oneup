@@ -3,7 +3,7 @@ local OptionsPopup = require("oneup.options_popup")
 
 ---@alias PreviewedOption { text: string, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
 ---
----@class PreviewedOptionsPopup: Popup
+---@class PreviewedOptionsPopup: OptionsPopup
 ---@field private preview_popup Popup
 ---@field private update_aucmd integer
 ---@field private border boolean
@@ -66,14 +66,14 @@ function PreviewedOptionsPopup:new(opts, enter)
         { "CursorMoved" },
         {
             callback = function ()
-                local col = vim.api.nvim_win_get_cursor(0)[1]
-                if col <= 0 or col > #optsPopup.options then return end ---@diagnostic disable-line:invisible
+                local option = optsPopup:get_option()
+                if option == nil then return end
 
-                local val_or_func = optsPopup.options[col].preview ---@diagnostic disable-line:invisible
+                local val_or_func = option.preview---@diagnostic disable-line:invisible
                 ---@type string[]
                 local val
                 if type(val_or_func) == "function" then
-                    val = val_or_func(optsPopup.options[col]) ---@diagnostic disable-line:invisible
+                    val = val_or_func(option) ---@diagnostic disable-line:invisible
                 else
                     val = val_or_func
                 end
