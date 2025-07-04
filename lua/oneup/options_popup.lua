@@ -10,6 +10,8 @@ local OptionsPopup = {}
 OptionsPopup.__index = OptionsPopup
 setmetatable(OptionsPopup, Popup)
 
+local dividerText = string.rep("-", 256)
+
 ---@class OptionsPopupOpts
 ---@field title string?         the title to display on the popup, useless if border is not true
 ---@field options Option[]      A list of options that may be selected from
@@ -75,12 +77,22 @@ function OptionsPopup:new(opts, enter)
             0,
             {
                 line_hl_group = "Title",
-                virt_text = { { "--------------------------------------------------------------------------------------------------------------------------------------------------------------------", "Title" } },
-                virt_text_pos = "eol"
+                virt_text = { { dividerText, "Title" } },
+                virt_text_pos = "eol",
+                virt_text_hide = true
+            }
+        )
+        vim.api.nvim_buf_set_extmark(
+            p:buf_id(),
+            ns,
+            row,
+            0,
+            {
+                virt_text = { { "--- ", "Title" } },
+                virt_text_pos = "inline"
             }
         )
     end
-
 
     --create selected highlight
 
