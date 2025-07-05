@@ -2,10 +2,20 @@ local Popup = require("oneup.popup")
 
 ---@alias Option { text: string, is_title?: boolean, [any]: any }
 
+---@alias TitleAlign
+---| '"left"'
+---| '"center"'
+---| '"right"'
+
 ---@class OptionsPopup: Popup
----@field private current integer       the currently selected option
----@field private options Option[]      a list of options
----@field private mark_id integer       the id of the ext mark used to highlight the current selection
+---@field private current integer               the currently selected option
+---@field private options Option[]              a list of options
+---@field private mark_id integer               the id of the ext mark used to highlight the current selection
+---@field private title_marks integer[]         a list of extmark ids corresponding to titles (used to keep them aligned)
+---@field private title_rows integer[]          a list of rows corresponding to each title mark
+---@field private title_widths integer[]        a list of widths for each separator
+---@field private title_align TitleAlign|integer either a number or title align
+---@field private update_titles fun(self: OptionsPopup)
 local OptionsPopup = {}
 OptionsPopup.__index = OptionsPopup
 setmetatable(OptionsPopup, Popup)
@@ -19,6 +29,7 @@ local dividerText = string.rep("-", 256)
 ---@field height string?        the height of the popup (may be a percent) sets height based on text if nil
 ---@field min_width integer?    the absolute minimum width for the popup. useless if width is not a percentage
 ---@field min_height integer?   the absolute minimum height for the popup. useless if height is not a percentage
+---@field separator_align TitleAlign|integer either a number or title align to align separator titles to
 ---@field border boolean?       border?
 ---@field persistent boolean?   Whether or not the popup will persist once window has been exited
 ---@field on_close function?    function to run when the popup is closed
@@ -28,6 +39,7 @@ local dividerText = string.rep("-", 256)
 function OptionsPopup:new(opts, enter)
     local menuText = {}
     local titles = {}
+    local title_widths = {}
     do
         local row = 0
         for _, option in pairs(opts.options) do
@@ -35,6 +47,7 @@ function OptionsPopup:new(opts, enter)
                 table.insert(titles, row)
             end
             table.insert(menuText, option.text)
+            table.insert(title_widths, #option.text)
             row = row + 1
         end
     end
@@ -62,6 +75,10 @@ function OptionsPopup:new(opts, enter)
     ---@class OptionsPopup
     local p = Popup:new(popupOpts, enter)
     p.options = opts.options
+    p.title_align = opts.separator_align or 0
+    p.title_widths = title_widths
+    p.title_rows = titles
+    p.title_marks = {}
 
     setmetatable(p, self)
 
@@ -82,17 +99,20 @@ function OptionsPopup:new(opts, enter)
                 virt_text_hide = true
             }
         )
-        vim.api.nvim_buf_set_extmark(
-            p:buf_id(),
-            ns,
-            row,
-            0,
-            {
-                virt_text = { { "--- ", "Title" } },
-                virt_text_pos = "inline"
-            }
+        table.insert(p.title_marks,
+            vim.api.nvim_buf_set_extmark(
+                p:buf_id(),
+                ns,
+                row,
+                0,
+                {
+                    virt_text = { { "", "Title" } },
+                    virt_text_pos = "inline"
+                }
+            )
         )
     end
+    p:update_titles()
 
     --create selected highlight
 
@@ -110,6 +130,12 @@ function OptionsPopup:new(opts, enter)
     p:next_option()
 
     return p
+end
+
+---resizes the popup
+function OptionsPopup:resize()
+    Popup.resize(self)
+    self:update_titles()
 end
 
 ---returns the currently selected option in the popup. useful for keybinds
@@ -163,6 +189,57 @@ function OptionsPopup:prev_option()
             }
         )
         vim.api.nvim_win_set_cursor(self:win_id(), {self.current, 0})
+    end
+end
+
+function OptionsPopup:update_titles()
+    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
+
+    ---@type integer
+    local base = 0
+    local center = false
+    local right = false
+    local tail = " "
+    if type(self.title_align) == "string" then
+        if self.title_align == "center" then
+            base = math.floor(self:width() / 2) - 1
+            center = true
+        elseif self.title_align == "right" then
+            base = self:width() - 1
+            right = true
+        end
+    elseif self.title_align <= -1 then
+        right = true
+        base = self:width() + self.title_align - 1
+    else
+        base = self.title_align - 1
+        if base <= 0 then
+            tail = ""
+            base = base + 1
+        end
+    end
+
+    for idx, _ in ipairs(self.title_marks) do
+        local text = ""
+        if center then
+            text = string.rep("-", base - math.floor(self.title_widths[idx] / 2.0)) .. tail
+        elseif right then
+            text = string.rep("-", base - self.title_widths[idx]) .. tail
+        else
+            text = string.rep("-", base) .. tail
+        end
+
+        vim.api.nvim_buf_set_extmark(
+            self:buf_id(),
+            ns,
+            self.title_rows[idx],
+            0,
+            {
+                id = self.title_marks[idx],
+                virt_text = { { text, "Title" } },
+                virt_text_pos = "inline"
+            }
+        )
     end
 end
 
