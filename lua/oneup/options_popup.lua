@@ -25,11 +25,9 @@ local dividerText = string.rep("-", 256)
 ---@class OptionsPopupOpts
 ---@field title string?         the title to display on the popup, useless if border is not true
 ---@field options Option[]      A list of options that may be selected from
----@field width string?         the width of the popup (may be a percent) sets width based on text if nil
----@field height string?        the height of the popup (may be a percent) sets height based on text if nil
----@field min_width integer?    the absolute minimum width for the popup. useless if width is not a percentage
----@field min_height integer?   the absolute minimum height for the popup. useless if height is not a percentage
----@field separator_align TitleAlign|integer either a number or title align to align separator titles to
+---@field height AdvLength|length
+---@field width AdvLength|length
+---@field separator_align TitleAlign|integer? either a number or title align to align separator titles to
 ---@field border boolean?       border?
 ---@field persistent boolean?   Whether or not the popup will persist once window has been exited
 ---@field on_close function?    function to run when the popup is closed
@@ -65,8 +63,6 @@ function OptionsPopup:new(opts, enter)
         title = opts.title,
         width = opts.width,
         height = opts.height,
-        min_width = opts.min_width,
-        min_height = opts.min_height,
         border = opts.border,
         persistent = opts.persistent,
         on_close = opts.on_close,
@@ -83,12 +79,12 @@ function OptionsPopup:new(opts, enter)
     setmetatable(p, self)
 
     local ns = vim.api.nvim_create_namespace("oneup_options_popup")
-    vim.api.nvim_win_set_hl_ns(p:win_id(), ns)
+    vim.api.nvim_win_set_hl_ns(p:winId(), ns)
 
     --highlight titles
     for _, row in pairs(titles) do
         vim.api.nvim_buf_set_extmark(
-            p:buf_id(),
+            p:bufId(),
             ns,
             row,
             0,
@@ -101,7 +97,7 @@ function OptionsPopup:new(opts, enter)
         )
         table.insert(p.title_marks,
             vim.api.nvim_buf_set_extmark(
-                p:buf_id(),
+                p:bufId(),
                 ns,
                 row,
                 0,
@@ -117,7 +113,7 @@ function OptionsPopup:new(opts, enter)
     --create selected highlight
 
     p.mark_id = vim.api.nvim_buf_set_extmark(
-        p:buf_id(),
+        p:bufId(),
         ns,
         0,
         0,
@@ -155,7 +151,7 @@ function OptionsPopup:next_option()
         self:next_option()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
-            self:buf_id(),
+            self:bufId(),
             vim.api.nvim_create_namespace("oneup_options_popup"),
             self.current - 1,
             0,
@@ -164,7 +160,7 @@ function OptionsPopup:next_option()
                 line_hl_group = "PmenuSel"
             }
         )
-        vim.api.nvim_win_set_cursor(self:win_id(), {self.current, 0})
+        vim.api.nvim_win_set_cursor(self:winId(), {self.current, 0})
     end
 end
 
@@ -179,7 +175,7 @@ function OptionsPopup:prev_option()
         self:prev_option()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
-            self:buf_id(),
+            self:bufId(),
             vim.api.nvim_create_namespace("oneup_options_popup"),
             self.current - 1,
             0,
@@ -188,7 +184,7 @@ function OptionsPopup:prev_option()
                 line_hl_group = "PmenuSel"
             }
         )
-        vim.api.nvim_win_set_cursor(self:win_id(), {self.current, 0})
+        vim.api.nvim_win_set_cursor(self:winId(), {self.current, 0})
     end
 end
 
@@ -202,15 +198,15 @@ function OptionsPopup:update_titles()
     local tail = " "
     if type(self.title_align) == "string" then
         if self.title_align == "center" then
-            base = math.floor(self:width() / 2) - 1
+            base = math.floor(self:getWidth() / 2) - 1
             center = true
         elseif self.title_align == "right" then
-            base = self:width() - 1
+            base = self:getWidth() - 1
             right = true
         end
     elseif self.title_align <= -1 then
         right = true
-        base = self:width() + self.title_align - 1
+        base = self:getWidth() + self.title_align - 1
     else
         base = self.title_align - 1
         if base <= 0 then
@@ -230,7 +226,7 @@ function OptionsPopup:update_titles()
         end
 
         vim.api.nvim_buf_set_extmark(
-            self:buf_id(),
+            self:bufId(),
             ns,
             self.title_rows[idx],
             0,

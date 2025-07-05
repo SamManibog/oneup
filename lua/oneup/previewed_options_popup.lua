@@ -1,5 +1,6 @@
 local Popup = require("oneup.popup")
 local OptionsPopup = require("oneup.options_popup")
+local utils = require("oneup.utils")
 
 ---@alias PreviewedOption { text: string, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
 ---
@@ -13,24 +14,21 @@ PreviewedOptionsPopup.__index = PreviewedOptionsPopup
 setmetatable(PreviewedOptionsPopup, OptionsPopup)
 
 ---@class PreviewedOptionsPopupPreviewOpts
----@field title string?         the title to display on the popup, useless if border is not true
----@field width string?         the width of the popup (may be a percent) sets width based on text if nil
----@field min_width integer?    the absolute minimum width for the popup. useless if width is not a percentage
+---@field title string?             the title to display on the popup, useless if border is not true
+---@field width AdvLength|length    the width of the popup
 
 ---@class PreviewedOptionsPopupOptionsOpts
 ---@field title string?         the title to display on the popup, useless if border is not true
----@field width string?         the width of the popup (may be a percent) sets width based on text if nil
----@field min_width integer?    the absolute minimum width for the popup. useless if width is not a percentage
+---@field width AdvLength|length    the width of the popup
 
 ---@class PreviewedOptionsPopupOpts
 ---@field preview_opts PreviewedOptionsPopupPreviewOpts
 ---@field options_opts PreviewedOptionsPopupOptionsOpts
 ---@field options PreviewedOption[]     A list of options that may be selected from
----@field height string?        the height of the popup (may be a percent) sets height based on text if nil
----@field min_height integer?   the absolute minimum height for the popup. useless if height is not a percentage
----@field border boolean?       border?
----@field persistent boolean?   Whether or not the popup will persist once window has been exited
----@field on_close function?    function to run when the popup is closed
+---@field height AdvLength|length       the height of both popups
+---@field border boolean?               border?
+---@field persistent boolean?           Whether or not the popup will persist once window has been exited
+---@field on_close function?            function to run when the popup is closed
 
 ---@param opts PreviewedOptionsPopupOpts the options for the given popup
 ---@param enter boolean whether or not to immediately focus the popup
@@ -40,8 +38,6 @@ function PreviewedOptionsPopup:new(opts, enter)
         title = opts.preview_opts.title,
         width = opts.preview_opts.width,
         height = opts.height,
-        min_width = opts.preview_opts.min_width,
-        min_height = opts.min_height,
         border = opts.border,
         focusable = false,
         modifiable = true,
@@ -56,8 +52,6 @@ function PreviewedOptionsPopup:new(opts, enter)
         title = opts.options_opts.title,
         width = opts.options_opts.width,
         height = opts.height,
-        min_width = opts.options_opts.min_width,
-        min_height = opts.min_height,
         border = opts.border,
         persistent = opts.persistent,
     }, enter)
@@ -78,7 +72,7 @@ function PreviewedOptionsPopup:new(opts, enter)
                     val = val_or_func
                 end
 
-                prevPopup:set_text(val)
+                prevPopup:setText(val)
             end
         }
     )
@@ -105,32 +99,17 @@ end
 
 ---@diagnostic disable:invisible
 function PreviewedOptionsPopup:resize()
-    local opts_win_cfg = vim.api.nvim_win_get_config(self.window_id)
-    local prev_win_cfg = vim.api.nvim_win_get_config(self.preview_popup.window_id)
-
     --calculate height
-    local height = opts_win_cfg.height
-    if self.height_mult ~= nil then
-        height = math.floor( (vim.o.lines * self.height_mult) + 0.5)
-        height = math.max(height, self.min_height)
-    end
+    local height = utils.advToInteger(self.height, false)
     local row = math.floor(((vim.o.lines - height) / 2) - 1)
     row = math.max(1, row)
 
 
     --calculate options popup width
-    local opts_width = opts_win_cfg.width
-    if self.width_mult ~= nil then
-        opts_width = math.floor( (vim.o.columns * self.width_mult) + 0.5)
-        opts_width = math.max(opts_width, self.min_width)
-    end
+    local opts_width = utils.advToInteger(self.width, false)
 
     --calculate preview popup width
-    local prev_width = prev_win_cfg.width
-    if self.preview_popup.width_mult ~= nil then
-        prev_width = math.floor( (vim.o.columns * self.preview_popup.width_mult) + 0.5)
-        prev_width = math.max(prev_width, self.preview_popup.min_width)
-    end
+    local prev_width = utils.advToInteger(self.preview_popup.width, false)
 
     local width = opts_width + prev_width + 1
     if self.border then width = width + 1 end

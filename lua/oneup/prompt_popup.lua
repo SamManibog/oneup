@@ -12,8 +12,8 @@ setmetatable(PromptPopup, Popup)
 ---@class PromptPopupOpts
 ---@field text string[]                                 text to display on the popup as a list of lines
 ---@field title string?                                 the title to display on the popup, useless if border is not true
----@field width string?                                 the width of the popup
----@field min_width integer?                            the absolute minimum width
+---@field width AdvLength|length
+---@field height AdvLength|length
 ---@field border boolean?                               border?
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
@@ -28,7 +28,6 @@ function PromptPopup:new(opts, enter)
         text = opts.text,
         title = opts.title,
         width = opts.width,
-        min_width = opts.min_width,
         border = opts.border,
         persistent = true,
     }
@@ -41,7 +40,7 @@ function PromptPopup:new(opts, enter)
     out.verify_input = opts.verify_input
     out.on_confirm = opts.on_confirm
 
-    local buf = out:buf_id()
+    local buf = out:bufId()
     utils.set_buf_opts(
         buf,
         {
@@ -51,13 +50,13 @@ function PromptPopup:new(opts, enter)
     )
     vim.fn.prompt_setprompt(buf, opts.prompt or "")
     vim.fn.prompt_setcallback(buf, function (text)
-        Popup.set_text(out, out.text) ---@diagnostic disable-line: invisible
+        Popup.setText(out, out.text) ---@diagnostic disable-line: invisible
         if out.verify_input ~= nil then
             if not out.verify_input(text) then
                 vim.api.nvim_buf_set_lines(
                     buf,
                     ---@diagnostic disable-next-line: invisible
-                    #vim.api.nvim_buf_get_lines(out:buf_id(), 0, -1, false),
+                    #vim.api.nvim_buf_get_lines(out:bufId(), 0, -1, false),
                     -1,
                     false,
                     {}
@@ -103,7 +102,7 @@ end
 ---@param text string[] the text to set for the popup as a list of lines
 function PromptPopup:set_text(text)
     self.text = text
-    Popup.set_text(self, text)
+    Popup.setText(self, text)
 end
 
 return PromptPopup
