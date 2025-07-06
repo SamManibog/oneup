@@ -3,7 +3,7 @@ local OptionsPopup = require("oneup.options_popup")
 local utils = require("oneup.utils")
 
 ---@alias PreviewedOption { text: string, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
----
+
 ---@class PreviewedOptionsPopup: OptionsPopup
 ---@field private preview_popup Popup
 ---@field private update_aucmd integer
@@ -13,17 +13,13 @@ local PreviewedOptionsPopup = {}
 PreviewedOptionsPopup.__index = PreviewedOptionsPopup
 setmetatable(PreviewedOptionsPopup, OptionsPopup)
 
----@class PreviewedOptionsPopupPreviewOpts
+---@class PreviewedOptionsPopupSubmenuOpts
 ---@field title string?             the title to display on the popup, useless if border is not true
 ---@field width AdvLength|length    the width of the popup
 
----@class PreviewedOptionsPopupOptionsOpts
----@field title string?         the title to display on the popup, useless if border is not true
----@field width AdvLength|length    the width of the popup
-
 ---@class PreviewedOptionsPopupOpts
----@field preview_opts PreviewedOptionsPopupPreviewOpts
----@field options_opts PreviewedOptionsPopupOptionsOpts
+---@field preview_opts PreviewedOptionsPopupSubmenuOpts
+---@field options_opts PreviewedOptionsPopupSubmenuOpts
 ---@field options PreviewedOption[]     A list of options that may be selected from
 ---@field height AdvLength|length       the height of both popups
 ---@field border boolean?               border?

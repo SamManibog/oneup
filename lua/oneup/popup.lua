@@ -10,6 +10,7 @@ local utils = require("oneup.utils")
 ---@field modifiable boolean?   whether or not the popup's buffer is modifiable
 ---@field persistent boolean?   Whether or not the popup will persist once window has been exited
 ---@field on_close function?     function to run when the popup is closed
+---@field close_bind string[]|string|nil
 
 ---@class Popup
 ---@field private buffer_id integer
@@ -29,6 +30,7 @@ Popup.__index = Popup
 ---@param opts PopupOpts the options for the new popup
 ---@param enter boolean whether or not to immediately focus the popup
 function Popup:new(opts, enter)
+    ---@type PopupOpts
     opts = vim.tbl_extend("keep",
         opts,
         {
@@ -39,6 +41,7 @@ function Popup:new(opts, enter)
         }
     )
 
+    ---@diagnostic disable: need-check-nil,assign-type-mismatch,cast-type-mismatch,cast-local-type
     ---@type AdvLength
     local width
     if type(opts.width) == "table" then
@@ -63,6 +66,7 @@ function Popup:new(opts, enter)
     if height.value == nil then
         height.value = math.max(1, #opts.text) ---@diagnostic disable-line:param-type-mismatch
     end
+    ---@diagnostic enable
 
     --create buffer
     ---@type integer
@@ -160,14 +164,24 @@ function Popup:new(opts, enter)
         close_aucmd = close_aucmd,
         resize_aucmd = resize_aucmd,
         title = opts.title,
-        width = width,
-        height = height,
+        width = width, ---@diagnostic disable-line:assign-type-mismatch
+        height = height, ---@diagnostic disable-line:assign-type-mismatch
         border = opts.border,
         on_close = opts.on_close,
     }
 
+
     setmetatable(out, self)
     out:resize()
+
+    if type(opts.close_bind) ~= "table" then
+        opts.close_bind = { opts.close_bind } ---@diagnostic disable-line:assign-type-mismatch
+    end
+    ---@type string[]
+    local binds = opts.close_bind ---@diagnostic disable-line:assign-type-mismatch --to fix weird luals glitch
+    for _, bind in pairs(binds) do
+        out:setKeymap("n", bind, function() out:close() end)
+    end
 
     return out
 end

@@ -31,6 +31,9 @@ local dividerText = string.rep("-", 256)
 ---@field border boolean?       border?
 ---@field persistent boolean?   Whether or not the popup will persist once window has been exited
 ---@field on_close function?    function to run when the popup is closed
+---@field close_bind string[]|string|nil
+---@field next_bind string[]|string|nil
+---@field previous_bind string[]|string|nil
 
 ---@param opts OptionsPopupOpts the options for the given popup
 ---@param enter boolean whether or not to immediately focus the popup
@@ -66,6 +69,7 @@ function OptionsPopup:new(opts, enter)
         border = opts.border,
         persistent = opts.persistent,
         on_close = opts.on_close,
+        close_bind = opts.close_bind
     }
 
     ---@class OptionsPopup
@@ -124,6 +128,22 @@ function OptionsPopup:new(opts, enter)
 
     p.current = 0
     p:next_option()
+
+    ---@diagnostic disable:param-type-mismatch,assign-type-mismatch
+    if type(opts.next_bind) ~= "table" then
+        opts.next_bind = { opts.next_bind }
+    end
+    if type(opts.previous_bind) ~= "table" then
+        opts.previous_bind = { opts.previous_bind }
+    end
+
+    for _, bind in pairs(opts.next_bind) do
+        p:setKeymap("n", bind, function() p:next_option() end)
+    end
+    for _, bind in pairs(opts.previous_bind) do
+        p:setKeymap("n", bind, function() p:prev_option() end)
+    end
+    ---@diagnostic enable
 
     return p
 end

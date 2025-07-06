@@ -18,6 +18,7 @@ setmetatable(PromptPopup, Popup)
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
 ---@field prompt string?                                possible prompt for input
+---@field close_bind string[]|string|nil
 
 ---@param opts PromptPopupOpts popup options
 ---@param enter boolean whether or not to immediately focus the popup
@@ -30,6 +31,7 @@ function PromptPopup:new(opts, enter)
         width = opts.width,
         border = opts.border,
         persistent = true,
+        close_bind = opts.close_bind
     }
 
     table.insert(base_opts.text,"")

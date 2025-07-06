@@ -39,7 +39,7 @@ end
 ---@param value length
 ---@return integer
 function M.getLengthV(value)
-    return M.getLength(value, vim.o.lines)
+    return M.getLength(value, vim.o.lines - 1)
 end
 
 ---gets the logical integer length given an AdvLength
@@ -51,7 +51,7 @@ function M.advToInteger(length, horizontal)
     if horizontal then
         whole = vim.o.columns
     else
-        whole = vim.o.lines
+        whole = vim.o.lines - 1
     end
 
     local min = M.getLength(length.min, whole, 0)
