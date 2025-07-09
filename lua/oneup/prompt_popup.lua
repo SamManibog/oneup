@@ -102,7 +102,7 @@ end
 
 ---sets the text of the prompt popup
 ---@param text string[] the text to set for the popup as a list of lines
-function PromptPopup:set_text(text)
+function PromptPopup:setText(text)
     self.text = text
     Popup.setText(self, text)
 end

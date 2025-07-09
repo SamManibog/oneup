@@ -15,7 +15,7 @@ local Popup = require("oneup.popup")
 ---@field private title_rows integer[]          a list of rows corresponding to each title mark
 ---@field private title_widths integer[]        a list of widths for each separator
 ---@field private title_align TitleAlign|integer either a number or title align
----@field private update_titles fun(self: OptionsPopup)
+---@field private updateTitles fun(self: OptionsPopup)
 local OptionsPopup = {}
 OptionsPopup.__index = OptionsPopup
 setmetatable(OptionsPopup, Popup)
@@ -69,7 +69,7 @@ function OptionsPopup:new(opts, enter)
         border = opts.border,
         persistent = opts.persistent,
         on_close = opts.on_close,
-        close_bind = opts.close_bind
+        close_bind = opts.close_bind,
     }
 
     ---@class OptionsPopup
@@ -112,7 +112,7 @@ function OptionsPopup:new(opts, enter)
             )
         )
     end
-    p:update_titles()
+    p:updateTitles()
 
     --create selected highlight
 
@@ -127,21 +127,31 @@ function OptionsPopup:new(opts, enter)
     )
 
     p.current = 0
-    p:next_option()
+    p:nextOption()
 
     ---@diagnostic disable:param-type-mismatch,assign-type-mismatch
-    if type(opts.next_bind) ~= "table" then
-        opts.next_bind = { opts.next_bind }
+    local next_binds
+    if opts.next_bind == nil then
+        next_binds = { "j", "<Down>" }
+    elseif type(opts.next_bind) ~= "table" then
+        next_binds = { opts.next_bind }
+    else
+        next_binds = opts.next_bind
     end
-    if type(opts.previous_bind) ~= "table" then
-        opts.previous_bind = { opts.previous_bind }
+    local prev_binds
+    if opts.previous_bind == nil then
+        prev_binds = { "k", "<Up>" }
+    elseif type(opts.previous_bind) ~= "table" then
+        prev_binds = { opts.previous_bind }
+    else
+        prev_binds = opts.previous_bind
     end
 
-    for _, bind in pairs(opts.next_bind) do
-        p:setKeymap("n", bind, function() p:next_option() end)
+    for _, bind in pairs(next_binds) do
+        p:setKeymap("n", bind, function() p:nextOption() end)
     end
-    for _, bind in pairs(opts.previous_bind) do
-        p:setKeymap("n", bind, function() p:prev_option() end)
+    for _, bind in pairs(prev_binds) do
+        p:setKeymap("n", bind, function() p:prevOption() end)
     end
     ---@diagnostic enable
 
@@ -151,24 +161,24 @@ end
 ---resizes the popup
 function OptionsPopup:resize()
     Popup.resize(self)
-    self:update_titles()
+    self:updateTitles()
 end
 
 ---returns the currently selected option in the popup. useful for keybinds
 ---@return Option option
-function OptionsPopup:get_option()
+function OptionsPopup:getOption()
     return self.options[self.current]
 end
 
 ---iterates forward to the next option in the popup
-function OptionsPopup:next_option()
+function OptionsPopup:nextOption()
     self.current = self.current + 1
 
     if self.current > #self.options then
         self.current = 0
-        self:next_option()
+        self:nextOption()
     elseif self.options[self.current].is_title then
-        self:next_option()
+        self:nextOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
@@ -185,14 +195,14 @@ function OptionsPopup:next_option()
 end
 
 ---iterates backward to the previous option in the popup
-function OptionsPopup:prev_option()
+function OptionsPopup:prevOption()
     self.current = self.current - 1
 
     if self.current <= 0 then
         self.current = #self.options + 1
-        self:prev_option()
+        self:prevOption()
     elseif self.options[self.current].is_title then
-        self:prev_option()
+        self:prevOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
@@ -208,7 +218,7 @@ function OptionsPopup:prev_option()
     end
 end
 
-function OptionsPopup:update_titles()
+function OptionsPopup:updateTitles()
     local ns = vim.api.nvim_create_namespace("oneup_options_popup")
 
     ---@type integer

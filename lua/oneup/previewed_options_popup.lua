@@ -25,6 +25,9 @@ setmetatable(PreviewedOptionsPopup, OptionsPopup)
 ---@field border boolean?               border?
 ---@field persistent boolean?           Whether or not the popup will persist once window has been exited
 ---@field on_close function?            function to run when the popup is closed
+---@field close_bind string[]|string|nil
+---@field next_bind string[]|string|nil
+---@field previous_bind string[]|string|nil
 
 ---@param opts PreviewedOptionsPopupOpts the options for the given popup
 ---@param enter boolean whether or not to immediately focus the popup
@@ -50,13 +53,16 @@ function PreviewedOptionsPopup:new(opts, enter)
         height = opts.height,
         border = opts.border,
         persistent = opts.persistent,
+        next_bind = opts.next_bind,
+        previous_bind = opts.previous_bind,
+        close_bind = opts.close_bind,
     }, enter)
 
     optsPopup.update_aucmd = vim.api.nvim_create_autocmd(
         { "CursorMoved" },
         {
             callback = function ()
-                local option = optsPopup:get_option()
+                local option = optsPopup:getOption()
                 if option == nil then return end
 
                 local val_or_func = option.preview---@diagnostic disable-line:invisible
@@ -102,10 +108,10 @@ function PreviewedOptionsPopup:resize()
 
 
     --calculate options popup width
-    local opts_width = utils.advToInteger(self.width, false)
+    local opts_width = utils.advToInteger(self.width, true)
 
     --calculate preview popup width
-    local prev_width = utils.advToInteger(self.preview_popup.width, false)
+    local prev_width = utils.advToInteger(self.preview_popup.width, true)
 
     local width = opts_width + prev_width + 1
     if self.border then width = width + 1 end

@@ -174,14 +174,18 @@ function Popup:new(opts, enter)
     setmetatable(out, self)
     out:resize()
 
-    if type(opts.close_bind) ~= "table" then
-        opts.close_bind = { opts.close_bind } ---@diagnostic disable-line:assign-type-mismatch
-    end
+    ---@diagnostic disable
     ---@type string[]
-    local binds = opts.close_bind ---@diagnostic disable-line:assign-type-mismatch --to fix weird luals glitch
-    for _, bind in pairs(binds) do
-        out:setKeymap("n", bind, function() out:close() end)
+    local binds
+    if type(opts.close_bind) ~= "table" then
+        binds = { opts.close_bind }
+    else
+        binds = opts.close_bind
     end
+    for _, bind in pairs(binds) do ---@diagnostic disable-line
+        out:setKeymap("n", bind, function() out:close() end) ---@diagnostic disable-line
+    end
+    ---@diagnostic enable
 
     return out
 end
