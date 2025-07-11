@@ -127,14 +127,7 @@ function Popup:new(opts, enter)
     if not opts.persistent then
         close_aucmd = vim.api.nvim_create_autocmd(
             {
-                --[["BufEnter",
-                "UIEnter",
-                "TabEnter",
-                "WinEnter",
-                "BufHidden",
-                "BufWipeout",]]
                 "BufLeave",
-                --"BufWinLeave",
             },
             {
                 callback = function ()

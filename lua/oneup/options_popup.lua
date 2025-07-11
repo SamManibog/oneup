@@ -38,28 +38,14 @@ local dividerText = string.rep("-", 256)
 ---@param opts OptionsPopupOpts the options for the given popup
 ---@param enter boolean whether or not to immediately focus the popup
 function OptionsPopup:new(opts, enter)
-    local menuText = {}
-    local titles = {}
-    local title_widths = {}
-    do
-        local row = 0
-        for _, option in pairs(opts.options) do
-            if option.is_title then
-                table.insert(titles, row)
-            end
-            table.insert(menuText, option.text)
-            table.insert(title_widths, #option.text)
-            row = row + 1
-        end
-    end
-
-    if #titles == #opts.options then
-        error("Options menu must have a non-title option")
+    local text = {}
+    for _, _ in pairs(opts.options) do
+        table.insert(text, "")
     end
 
     --@type PopupOpts
     local popupOpts = {
-        text = menuText,
+        text = text,
         focusable = true,
         modifiable = false,
 
@@ -76,55 +62,9 @@ function OptionsPopup:new(opts, enter)
     local p = Popup:new(popupOpts, enter)
     p.options = opts.options
     p.title_align = opts.separator_align or 0
-    p.title_widths = title_widths
-    p.title_rows = titles
-    p.title_marks = {}
 
     setmetatable(p, self)
-
-    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
-    vim.api.nvim_win_set_hl_ns(p:winId(), ns)
-
-    --highlight titles
-    for _, row in pairs(titles) do
-        vim.api.nvim_buf_set_extmark(
-            p:bufId(),
-            ns,
-            row,
-            0,
-            {
-                line_hl_group = "Title",
-                virt_text = { { dividerText, "Title" } },
-                virt_text_pos = "eol",
-                virt_text_hide = true
-            }
-        )
-        table.insert(p.title_marks,
-            vim.api.nvim_buf_set_extmark(
-                p:bufId(),
-                ns,
-                row,
-                0,
-                {
-                    virt_text = { { "", "Title" } },
-                    virt_text_pos = "inline"
-                }
-            )
-        )
-    end
-    p:updateTitles()
-
-    --create selected highlight
-
-    p.mark_id = vim.api.nvim_buf_set_extmark(
-        p:bufId(),
-        ns,
-        0,
-        0,
-        {
-            line_hl_group = "PmenuSel"
-        }
-    )
+    p:refreshText()
 
     p.current = 0
     p:nextOption()
@@ -267,6 +207,76 @@ function OptionsPopup:updateTitles()
             }
         )
     end
+end
+
+function OptionsPopup:refreshText()
+    local menuText = {}
+    local titles = {}
+    local title_widths = {}
+    do
+        local row = 0
+        for _, option in pairs(self.options) do
+            if option.is_title then
+                table.insert(titles, row)
+            end
+            table.insert(menuText, option.text)
+            table.insert(title_widths, #option.text)
+            row = row + 1
+        end
+    end
+
+    if #titles == #self.options then
+        error("Options menu must have a non-title option")
+    end
+
+    self.title_widths = title_widths
+    self.title_rows = titles
+    self.title_marks = {}
+
+    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
+
+    vim.api.nvim_buf_clear_namespace(self:bufId(), ns, 0, -1)
+    Popup.setText(self, menuText)
+
+    --highlight titles
+    for _, row in pairs(titles) do
+        vim.api.nvim_buf_set_extmark(
+            self:bufId(),
+            ns,
+            row,
+            0,
+            {
+                line_hl_group = "Title",
+                virt_text = { { dividerText, "Title" } },
+                virt_text_pos = "eol",
+                virt_text_hide = true
+            }
+        )
+        table.insert(self.title_marks,
+            vim.api.nvim_buf_set_extmark(
+                self:bufId(),
+                ns,
+                row,
+                0,
+                {
+                    virt_text = { { "", "Title" } },
+                    virt_text_pos = "inline"
+                }
+            )
+        )
+    end
+    self:updateTitles()
+
+    self.mark_id = vim.api.nvim_buf_set_extmark(
+        self:bufId(),
+        ns,
+        0,
+        0,
+        {
+            line_hl_group = "PmenuSel"
+        }
+    )
+
 end
 
 OptionsPopup.set_text = nil

@@ -2,7 +2,7 @@ local Popup = require("oneup.popup")
 local OptionsPopup = require("oneup.options_popup")
 local utils = require("oneup.utils")
 
----@alias PreviewedOption { text: string, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
+---@alias PreviewedOption { text: string, is_title?: boolean, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
 
 ---@class PreviewedOptionsPopup: OptionsPopup
 ---@field private preview_popup Popup
@@ -56,25 +56,16 @@ function PreviewedOptionsPopup:new(opts, enter)
         next_bind = opts.next_bind,
         previous_bind = opts.previous_bind,
         close_bind = opts.close_bind,
+        on_close = opts.on_close
     }, enter)
+
+    setmetatable(optsPopup, self)
 
     optsPopup.update_aucmd = vim.api.nvim_create_autocmd(
         { "CursorMoved" },
         {
             callback = function ()
-                local option = optsPopup:getOption()
-                if option == nil then return end
-
-                local val_or_func = option.preview---@diagnostic disable-line:invisible
-                ---@type string[]
-                local val
-                if type(val_or_func) == "function" then
-                    val = val_or_func(option) ---@diagnostic disable-line:invisible
-                else
-                    val = val_or_func
-                end
-
-                prevPopup:setText(val)
+                optsPopup:reloadPreview()
             end
         }
     )
@@ -82,21 +73,38 @@ function PreviewedOptionsPopup:new(opts, enter)
     optsPopup.preview_popup = prevPopup
     optsPopup.border = opts.border
     if opts.border == nil then optsPopup.border = true end
-    optsPopup.on_close = function () ---@diagnostic disable-line:invisible
-        prevPopup:close()
-        if optsPopup.update_aucmd ~= nil then ---@diagnostic disable-line:invisible
-            vim.api.nvim_del_autocmd(optsPopup.update_aucmd) ---@diagnostic disable-line:invisible
-            self.update_aucmd = nil
-        end
-        if opts.on_close ~= nil then
-            opts.on_close()
-        end
-    end
 
-    setmetatable(optsPopup, self)
     optsPopup:resize()
 
     return optsPopup
+end
+
+function PreviewedOptionsPopup:reloadPreview()
+    local option = self:getOption()
+    if option == nil then return end
+
+    local val_or_func = option.preview---@diagnostic disable-line:invisible
+    ---@type string[]
+    local val
+    if type(val_or_func) == "function" then
+        val = val_or_func(option) ---@diagnostic disable-line:invisible
+    else
+        val = val_or_func
+    end
+
+    self.preview_popup:setText(val)
+end
+
+function PreviewedOptionsPopup:close()
+    Popup.close(self)
+    self.preview_popup:close()
+    if self.update_aucmd ~= nil then ---@diagnostic disable-line:invisible
+        vim.api.nvim_del_autocmd(self.update_aucmd) ---@diagnostic disable-line:invisible
+        self.update_aucmd = nil
+    end
+    if self.on_close ~= nil then ---@diagnostic disable-line:invisible
+        self.on_close() ---@diagnostic disable-line:invisible
+    end
 end
 
 ---@diagnostic disable:invisible

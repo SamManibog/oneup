@@ -18,6 +18,7 @@ setmetatable(PromptPopup, Popup)
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
 ---@field prompt string?                                possible prompt for input
+---@field on_close function?     function to run when the popup is closed
 ---@field close_bind string[]|string|nil
 
 ---@param opts PromptPopupOpts popup options
@@ -31,7 +32,8 @@ function PromptPopup:new(opts, enter)
         width = opts.width,
         border = opts.border,
         persistent = true,
-        close_bind = opts.close_bind
+        close_bind = opts.close_bind,
+        on_close = opts.on_close
     }
 
     table.insert(base_opts.text,"")
@@ -75,14 +77,7 @@ function PromptPopup:new(opts, enter)
     vim.schedule(function ()
         local close_aucmd = vim.api.nvim_create_autocmd(
             {
-                "BufEnter",
-                "UIEnter",
-                "TabEnter",
-                "WinEnter",
-                "BufHidden",
-                "BufWipeout",
                 "BufLeave",
-                "BufWinLeave",
                 "ModeChanged"
             },
             {
