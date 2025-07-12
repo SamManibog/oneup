@@ -267,12 +267,20 @@ function OptionsPopup:refreshText()
     end
     self:updateTitles()
 
+    local row
+    if self.current == nil then
+        row = 0
+    else
+        row = self.current - 1
+    end
+
     self.mark_id = vim.api.nvim_buf_set_extmark(
         self:bufId(),
         ns,
-        0,
+        row,
         0,
         {
+            priority = 200,
             line_hl_group = "PmenuSel"
         }
     )

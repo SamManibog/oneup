@@ -229,6 +229,17 @@ function Popup:resize()
     )
 end
 
+---gets the text of the popup
+---@return string[] text
+function Popup:getText()
+    return vim.api.nvim_buf_get_lines(
+        self.buffer_id,
+        0,
+        -1,
+        false
+    )
+end
+
 ---sets the text of the popup
 ---@param text string[]
 function Popup:setText(text)
