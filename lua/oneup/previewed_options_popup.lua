@@ -2,7 +2,7 @@ local Popup = require("oneup.popup")
 local OptionsPopup = require("oneup.options_popup")
 local utils = require("oneup.utils")
 
----@alias PreviewedOption { text: string, is_title?: boolean, preview: (string[] | fun(option: PreviewedOption): string[]), [any]: any }
+---@alias PreviewedOption { text: string, is_title?: boolean, preview: (string[] | fun(option: PreviewedOption): string[]|Line[]), [any]: any }
 
 ---@class PreviewedOptionsPopup: OptionsPopup
 ---@field private preview_popup Popup

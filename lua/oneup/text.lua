@@ -11,10 +11,10 @@ setmetatable(Text, {
 })
 
 ---@param text string the content of the object
----@param opts { hl_group: string?, hl_priority: number? }
+---@param opts? { hl_group: string?, hl_priority: number? }
 ---@return Text
 function Text.new(text, opts)
-    local opts = opts or {}
+    opts = opts or {}
     local self = setmetatable({}, Text)
     self.text = text
     self.hl_group = opts.hl_group

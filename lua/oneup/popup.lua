@@ -30,6 +30,8 @@ local Line = require("oneup.line")
 local Popup = {}
 Popup.__index = Popup
 
+local ns = vim.api.nvim_create_namespace("oneup")
+
 ---Creates a new popup
 ---@param opts PopupOpts the options for the new popup
 ---@param enter boolean whether or not to immediately focus the popup
@@ -245,7 +247,7 @@ function Popup:setText(text)
 
     for _, line in ipairs(text) do
         if type(line) == "string" then
-            table.insert(logical_text, Line({ Text(line) }))
+            table.insert(logical_text, Line(line))
         else
             table.insert(logical_text, line)
         end
@@ -264,7 +266,6 @@ function Popup:updateText()
     local buf = self.buffer_id
 
     ---clear highlights
-    local ns = vim.api.nvim_create_namespace("oneup")
     vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
 

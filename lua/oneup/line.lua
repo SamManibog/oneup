@@ -1,3 +1,5 @@
+local Text = require("oneup.text")
+
 ---@class Line
 ---@field align Align
 ---@field text Text[]
@@ -5,19 +7,26 @@
 ---@field hl_priority number
 local Line = {}
 Line.__index = Line
+
 setmetatable(Line, {
-    __call = function(cls, ...)
-    return cls.new(...)
-end
+    __call = function(cls, text, opts)
+        return cls.new(text, opts)
+    end
 })
 
----@param text Text[] the content of the object
----@param opts { hl_group: string?, hl_priority: number?, align: Align?}
+local ns = vim.api.nvim_create_namespace("oneup")
+
+---@param text string|Text[] the content of the object
+---@param opts? { hl_group: string?, hl_priority: number?, align: Align?}
 ---@return Line
 function Line.new(text, opts)
-    local opts = opts or {}
+    opts = opts or {}
     local self = setmetatable({}, Line)
-    self.text = text
+    if type(text) == "string" then
+        self.text = { Text(text) }
+    else
+        self.text = text
+    end
     self.align = opts.align or "left"
     self.hl_group = opts.hl_group
     self.hl_priority = opts.hl_priority or 0
@@ -70,8 +79,6 @@ function Line:render(buf, line, width)
     end
 
     vim.api.nvim_buf_set_lines(buf, line, line + 1, false, { line_text })
-
-    local ns = vim.api.nvim_create_namespace("oneup")
 
     --handle text block highlighting
     for idx, text in ipairs(hl_text) do

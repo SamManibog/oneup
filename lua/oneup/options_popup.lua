@@ -22,6 +22,8 @@ setmetatable(OptionsPopup, Popup)
 
 local dividerText = string.rep("-", 256)
 
+local ns = vim.api.nvim_create_namespace("oneup")
+
 ---@class OptionsPopupOpts
 ---@field title string?         the title to display on the popup, useless if border is not true
 ---@field options Option[]      A list of options that may be selected from
@@ -122,7 +124,7 @@ function OptionsPopup:nextOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
-            vim.api.nvim_create_namespace("oneup"),
+            ns,
             self.current - 1,
             0,
             {
@@ -146,7 +148,7 @@ function OptionsPopup:prevOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
-            vim.api.nvim_create_namespace("oneup"),
+            ns,
             self.current - 1,
             0,
             {
@@ -159,8 +161,6 @@ function OptionsPopup:prevOption()
 end
 
 function OptionsPopup:updateTitles()
-    local ns = vim.api.nvim_create_namespace("oneup")
-
     ---@type integer
     local base = 0
     local center = false
@@ -232,8 +232,6 @@ function OptionsPopup:refreshText()
     self.title_widths = title_widths
     self.title_rows = titles
     self.title_marks = {}
-
-    local ns = vim.api.nvim_create_namespace("oneup")
 
     vim.api.nvim_buf_clear_namespace(self:bufId(), ns, 0, -1)
     Popup.setText(self, menuText)
