@@ -10,7 +10,7 @@ PromptPopup.__index = PromptPopup
 setmetatable(PromptPopup, Popup)
 
 ---@class PromptPopupOpts
----@field text string[]                                 text to display on the popup as a list of lines
+---@field text string[]|Line[]                          text to display on the popup as a list of lines
 ---@field title string?                                 the title to display on the popup, useless if border is not true
 ---@field width AdvLength|length
 ---@field height AdvLength|length
@@ -40,7 +40,6 @@ function PromptPopup:new(opts, enter)
 
     ---@type PromptPopup
     local out = Popup:new(base_opts, enter) ---@diagnostic disable-line: assign-type-mismatch
-    out.text = opts.text
     out.verify_input = opts.verify_input
     out.on_confirm = opts.on_confirm
 

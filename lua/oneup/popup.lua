@@ -1,7 +1,10 @@
 local utils = require("oneup.utils")
 
+local Text = require("oneup.text")
+local Line = require("oneup.line")
+
 ---@class PopupOpts
----@field text string[]         text to display on the popup as a list of lines
+---@field text string[]|Line[]? text to display on the popup as a list of lines
 ---@field title string?         the title to display on the popup, useless if border is not true
 ---@field width AdvLength|length
 ---@field height AdvLength|length
@@ -13,6 +16,7 @@ local utils = require("oneup.utils")
 ---@field close_bind string[]|string|nil
 
 ---@class Popup
+---@field text Line[]
 ---@field private buffer_id integer
 ---@field private window_id integer
 ---@field private closed boolean
@@ -34,6 +38,7 @@ function Popup:new(opts, enter)
     opts = vim.tbl_extend("keep",
         opts,
         {
+            text = {},
             modifiable = false,
             focusable = true,
             border = true,
@@ -71,14 +76,6 @@ function Popup:new(opts, enter)
     --create buffer
     ---@type integer
     local buffer = vim.api.nvim_create_buf(false, true)
-
-    vim.api.nvim_buf_set_lines(
-        buffer,
-        0,
-        -1,
-        true,
-        opts.text or {""}
-    )
 
     utils.set_buf_opts(buffer, {
         modifiable = opts.modifiable,
@@ -150,6 +147,7 @@ function Popup:new(opts, enter)
     )
 
     out = {
+        text = {},
         buffer_id = buffer,
         window_id = window,
         opts = opts,
@@ -163,8 +161,8 @@ function Popup:new(opts, enter)
         on_close = opts.on_close,
     }
 
-
     setmetatable(out, self)
+    out:setText(opts.text)
     out:resize()
 
     ---@diagnostic disable
@@ -229,7 +227,7 @@ function Popup:resize()
     )
 end
 
----gets the text of the popup
+---gets actual the text of the popup
 ---@return string[] text
 function Popup:getText()
     return vim.api.nvim_buf_get_lines(
@@ -241,19 +239,42 @@ function Popup:getText()
 end
 
 ---sets the text of the popup
----@param text string[]
+---@param text Line[]|string[]
 function Popup:setText(text)
+    local logical_text = {}
+
+    for _, line in ipairs(text) do
+        if type(line) == "string" then
+            table.insert(logical_text, Line({ Text(line) }))
+        else
+            table.insert(logical_text, line)
+        end
+    end
+
+    self.text = logical_text
+    self:updateText()
+end
+
+---makes the text of the popup reflect the stored text value
+function Popup:updateText()
     local original_mod = self:getModifiable()
     self:setModifiable(true)
 
-    self.text = text
-    vim.api.nvim_buf_set_lines(
-        self.buffer_id,
-        0,
-        -1,
-        true,
-        self.text or {""}
-    )
+    local width = self:getWidth()
+    local buf = self.buffer_id
+
+    ---clear highlights
+    local ns = vim.api.nvim_create_namespace("oneup")
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+
+
+    --update lines
+    for idx, line in pairs(self.text) do
+        line:render(buf, idx - 1, width)
+    end
+
+    --clear extra lines
+    vim.api.nvim_buf_set_lines(self.buffer_id, #self.text, -1, false, {})
 
     if not original_mod then
         self:setModifiable(false)

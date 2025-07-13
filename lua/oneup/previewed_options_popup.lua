@@ -59,7 +59,7 @@ function PreviewedOptionsPopup:new(opts, enter)
         on_close = opts.on_close
     }, enter)
 
-    setmetatable(optsPopup, self)
+    setmetatable(optsPopup, PreviewedOptionsPopup)
 
     optsPopup.update_aucmd = vim.api.nvim_create_autocmd(
         { "CursorMoved" },

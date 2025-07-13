@@ -2,7 +2,7 @@ local Popup = require("oneup.popup")
 
 ---@alias Option { text: string, is_title?: boolean, [any]: any }
 
----@alias TitleAlign
+---@alias Align
 ---| '"left"'
 ---| '"center"'
 ---| '"right"'
@@ -14,7 +14,7 @@ local Popup = require("oneup.popup")
 ---@field private title_marks integer[]         a list of extmark ids corresponding to titles (used to keep them aligned)
 ---@field private title_rows integer[]          a list of rows corresponding to each title mark
 ---@field private title_widths integer[]        a list of widths for each separator
----@field private title_align TitleAlign|integer either a number or title align
+---@field private title_align Align|integer either a number or title align
 ---@field private updateTitles fun(self: OptionsPopup)
 local OptionsPopup = {}
 OptionsPopup.__index = OptionsPopup
@@ -27,7 +27,7 @@ local dividerText = string.rep("-", 256)
 ---@field options Option[]      A list of options that may be selected from
 ---@field height AdvLength|length
 ---@field width AdvLength|length
----@field separator_align TitleAlign|integer? either a number or title align to align separator titles to
+---@field separator_align Align|integer? either a number or title align to align separator titles to
 ---@field border boolean?       border?
 ---@field persistent boolean?   Whether or not the popup will persist once window has been exited
 ---@field on_close function?    function to run when the popup is closed
@@ -122,7 +122,7 @@ function OptionsPopup:nextOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
-            vim.api.nvim_create_namespace("oneup_options_popup"),
+            vim.api.nvim_create_namespace("oneup"),
             self.current - 1,
             0,
             {
@@ -146,7 +146,7 @@ function OptionsPopup:prevOption()
     else
         self.mark_id = vim.api.nvim_buf_set_extmark(
             self:bufId(),
-            vim.api.nvim_create_namespace("oneup_options_popup"),
+            vim.api.nvim_create_namespace("oneup"),
             self.current - 1,
             0,
             {
@@ -159,7 +159,7 @@ function OptionsPopup:prevOption()
 end
 
 function OptionsPopup:updateTitles()
-    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
+    local ns = vim.api.nvim_create_namespace("oneup")
 
     ---@type integer
     local base = 0
@@ -233,7 +233,7 @@ function OptionsPopup:refreshText()
     self.title_rows = titles
     self.title_marks = {}
 
-    local ns = vim.api.nvim_create_namespace("oneup_options_popup")
+    local ns = vim.api.nvim_create_namespace("oneup")
 
     vim.api.nvim_buf_clear_namespace(self:bufId(), ns, 0, -1)
     Popup.setText(self, menuText)
