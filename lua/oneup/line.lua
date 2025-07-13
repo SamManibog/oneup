@@ -72,7 +72,6 @@ function Line:render(buf, line, width)
         end
 
         if padding > 0 then
-            print("padding added: "..padding)
             for idx, col in ipairs(text_starts) do
                 text_starts[idx] = col + padding
             end
