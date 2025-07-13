@@ -65,13 +65,14 @@ function Line:render(buf, line, width)
         local padding = 0
         if self.align == "right" then
             padding = width - text_width
-            line_text = line_text .. string.rep(" ", padding)
+            line_text = string.rep(" ", padding) .. line_text
         elseif self.align == "center" then
             padding = math.floor((width - text_width) / 2.0)
-            line_text = line_text .. string.rep(" ", padding)
+            line_text = string.rep(" ", padding) .. line_text
         end
 
         if padding > 0 then
+            print("padding added: "..padding)
             for idx, col in ipairs(text_starts) do
                 text_starts[idx] = col + padding
             end
@@ -99,6 +100,16 @@ function Line:render(buf, line, width)
         line_hl_group = self.hl_group,
         priority = self.hl_priority,
     })
+end
+
+---returns the text that will be rendered upon calling render()
+---@return string
+function Line:getText()
+    local out = ""
+    for _, text in ipairs(self.text) do
+        out = out..text.text
+    end
+    return out
 end
 
 return Line

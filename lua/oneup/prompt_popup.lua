@@ -4,7 +4,6 @@ local utils = require("oneup.utils")
 ---@class PromptPopup: Popup
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
----@field private text string[]
 local PromptPopup = {}
 PromptPopup.__index = PromptPopup
 setmetatable(PromptPopup, Popup)
@@ -92,13 +91,6 @@ function PromptPopup:new(opts, enter)
     setmetatable(out, self)
 
     return out
-end
-
----sets the text of the prompt popup
----@param text string[] the text to set for the popup as a list of lines
-function PromptPopup:setText(text)
-    self.text = text
-    Popup.setText(self, text)
 end
 
 return PromptPopup

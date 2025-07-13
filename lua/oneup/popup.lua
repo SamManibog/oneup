@@ -227,6 +227,21 @@ function Popup:resize()
             height = height,
         }
     )
+
+    ---handle text allignment
+    local original_mod = self:getModifiable()
+    self:setModifiable(true)
+
+    local buf = self.buffer_id
+    for idx, line in pairs(self.text) do
+        if line.align ~= "left" then
+            line:render(buf, idx - 1, width)
+        end
+    end
+
+    if not original_mod then
+        self:setModifiable(false)
+    end
 end
 
 ---gets actual the text of the popup
