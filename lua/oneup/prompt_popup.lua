@@ -64,7 +64,6 @@ function PromptPopup:new(opts, enter)
                     {}
                 )
                 vim.cmd("startinsert!")
-                print("Invalid input '"..text.."'.")
                 return
             end
         end
