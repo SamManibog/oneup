@@ -83,7 +83,8 @@ function Popup:new(opts, enter)
         modifiable = opts.modifiable,
         bufhidden = "wipe",
         buftype = "nowrite",
-        swapfile = false
+        swapfile = false,
+        buflisted = false
     })
 
     --create window
