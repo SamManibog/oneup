@@ -2,11 +2,6 @@ local Popup = require("oneup.popup")
 
 ---@alias Option { text: string, is_title?: boolean, [any]: any }
 
----@alias Align
----| '"left"'
----| '"center"'
----| '"right"'
-
 ---@class OptionsPopup: Popup
 ---@field private current integer               the currently selected option
 ---@field private options Option[]              a list of options

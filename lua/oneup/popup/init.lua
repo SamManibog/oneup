@@ -1,6 +1,5 @@
 local utils = require("oneup.utils")
 
-local Text = require("oneup.text")
 local Line = require("oneup.line")
 
 ---@class PopupOpts
