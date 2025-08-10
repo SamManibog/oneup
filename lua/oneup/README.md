@@ -6,10 +6,10 @@ Oneup is a simple popup gui library that originated from within my Neovim config
 
 ```lua
 -- Include the module needed for your desired popup type
-local Line = require("oneup.line") -- More advanced buffer lines
+local Line = require("oneup.line") -- More advanced buffer lines (also see text module)
 local Popup = require("oneup.popup")
 
--- Create popups using the new function
+-- Create popups (of any kind) using the new function
 Popup:new(
     -- Specify popup options
     {
@@ -24,16 +24,17 @@ Popup:new(
             "",
             Line("- Sam", { align = "right" }),
         },
-        width = { -- An AdvLength table see StructTypes.md for more
+        width = { -- An AdvLength table see StructTypes.md for more info
             min = 50,       -- Minimum 50 columns wide
             max = 70,       -- Maximum 70 columns wide
             value = "40%",  -- 60% of global screen width
         },
         height = 8, -- Exactly 8 lines tall
+        persistent = true, -- Keep popup open when focus is lost
         close_bind = { "<C-c>", "q" } -- Bindings to close the popup
     },
 
-    -- Pass true or nil to mount the popup on creation
+    -- Pass true or nil to mount the popup upon creation
     true
 )
 ```
