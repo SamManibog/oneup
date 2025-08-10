@@ -1,6 +1,6 @@
-# Popup
+# Prompt Popup
 
-The base class for all popups in this plugin. Instantiated with Popup:new(opts), using the options
+A popup used to take text input from the user. Instantiated with PromptPopup:new(opts), using the options
 defined in the next section.
 
 ## Initialization Options
@@ -41,23 +41,24 @@ The height of the popup in relation the global height. If `nil`, autofits to the
 Note that if height is `nil`, the popup will only be autofit on creation and will
 not change in size if the buffer is changed.
 
-### focusable
-
-**Type:** `boolean?`
-
-Whether or not the popup window should be focusable. Defaults to true.
-
-### modifiable
-
-**Type:** `boolean?`
-
-Whether or not the popup buffer should be modifiable.
-
 ### persistent
 
 **Type:** `boolean?`
 
 Whether or not the popup window should close upon exiting/changing buffers.
+
+### verify_input
+
+**Type:** `function(string) -> boolean` or `nil`
+
+An optional function used to verify input before on_confirm may be called. The
+string passed is the input recieved.
+
+### on_confirm
+
+**Type:** `function(string)`
+
+The function used to process input. The string passed is the input recieved.
 
 ### on_close
 

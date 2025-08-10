@@ -43,7 +43,7 @@ function PromptPopup:new(opts, enter)
     out.on_confirm = opts.on_confirm
 
     local buf = out:bufId()
-    utils.set_buf_opts(
+    utils.setBufOpts(
         buf,
         {
             buftype = "prompt",

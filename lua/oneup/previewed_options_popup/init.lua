@@ -2,7 +2,7 @@ local Popup = require("oneup.popup")
 local OptionsPopup = require("oneup.options_popup")
 local utils = require("oneup.utils")
 
----@alias PreviewedOption { text: string, is_title?: boolean, preview: (string[] | fun(option: PreviewedOption): string[]|Line[]), [any]: any }
+---@alias PreviewedOption { text: string, is_title?: boolean, preview: (string[]|Line[] | fun(option: PreviewedOption): string[]|Line[]), [any]: any }
 
 ---@class PreviewedOptionsPopup: OptionsPopup
 ---@field private preview_popup Popup
@@ -20,6 +20,7 @@ setmetatable(PreviewedOptionsPopup, OptionsPopup)
 ---@class PreviewedOptionsPopupOpts
 ---@field preview_opts PreviewedOptionsPopupSubmenuOpts
 ---@field options_opts PreviewedOptionsPopupSubmenuOpts
+---@field separator_align integer?
 ---@field options PreviewedOption[]     A list of options that may be selected from
 ---@field height AdvLength|length       the height of both popups
 ---@field border boolean?               border?
@@ -52,6 +53,7 @@ function PreviewedOptionsPopup:new(opts, enter)
         width = opts.options_opts.width,
         height = opts.height,
         border = opts.border,
+        separator_align = opts.separator_align,
         persistent = opts.persistent,
         next_bind = opts.next_bind,
         previous_bind = opts.previous_bind,

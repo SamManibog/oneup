@@ -33,7 +33,7 @@ local ns = vim.api.nvim_create_namespace("oneup")
 
 ---Creates a new popup
 ---@param opts PopupOpts the options for the new popup
----@param enter boolean whether or not to immediately focus the popup
+---@param enter? boolean whether or not to immediately focus the popup
 function Popup:new(opts, enter)
     ---@type PopupOpts
     opts = vim.tbl_extend("keep",
@@ -46,6 +46,7 @@ function Popup:new(opts, enter)
             persistent = false
         }
     )
+    enter = enter or true
 
     ---@diagnostic disable: need-check-nil,assign-type-mismatch,cast-type-mismatch,cast-local-type
     ---@type AdvLength
@@ -78,7 +79,7 @@ function Popup:new(opts, enter)
     ---@type integer
     local buffer = vim.api.nvim_create_buf(false, true)
 
-    utils.set_buf_opts(buffer, {
+    utils.setBufOpts(buffer, {
         modifiable = opts.modifiable,
         bufhidden = "wipe",
         buftype = "nowrite",

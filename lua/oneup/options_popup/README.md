@@ -1,15 +1,40 @@
-# Popup
+# Options Popup
 
-The base class for all popups in this plugin. Instantiated with Popup:new(opts), using the options
-defined in the next section.
+A popup used to select from a set of elements called `Options`. Instantiated with OptionsPopup:new(opts).
 
-## Initialization Options
+## Options
+
+`Options` are tables with two important fields. They are used to hold data regarding an element and have
+two special fields which are used internally.
 
 ### text
 
-**Type:** `string[]` or `Line[]`
+**Type:** `string`
 
-The text to display on the popup provided as a list of separate lines.
+The text to display on the option. New lines are not allowed (not enforced).
+
+### is_title
+
+**Type:** `boolean?`
+
+If true, this option will serve as a separator for other given options. It cannot be selected via any
+stock API.
+
+## Initialization Options
+
+### options
+
+**Type:** `Options[]`
+
+A list of `Options` (see above section) listed by the menu.
+
+### separator_align
+
+**Type:** `Align` or `Integer` or `nil`
+
+How to align the separator. Defaults to left.
+If a non-negative integer, interpreted as the number of cells used as padding.
+If a negative integer, interpreted as distance in cells from the right side of the screen popup window.
 
 ### title
 
@@ -41,18 +66,6 @@ The height of the popup in relation the global height. If `nil`, autofits to the
 Note that if height is `nil`, the popup will only be autofit on creation and will
 not change in size if the buffer is changed.
 
-### focusable
-
-**Type:** `boolean?`
-
-Whether or not the popup window should be focusable. Defaults to true.
-
-### modifiable
-
-**Type:** `boolean?`
-
-Whether or not the popup buffer should be modifiable.
-
 ### persistent
 
 **Type:** `boolean?`
@@ -71,7 +84,41 @@ The function to run after the popup is closed.
 
 The keybinding or list of keybinds used to close the popup.
 
+### next_bind
+
+**Type:** `string[]` or `string` or `nil`
+
+The keybinding or list of keybinds used to select the next menu item.
+
+### next_bind
+
+**Type:** `string[]` or `string` or `nil`
+
+The keybinding or list of keybinds used to select the previous menu item.
+
 ## Functions
+
+### getOption()
+
+Returns the currently selected option.
+
+*return (`Option`):* The currently selected option.
+
+### nextOption()
+
+Iterates the selected option forward by 1.
+
+### prevOption()
+
+Iterates the selected option backward by 1.
+
+### updateTitles()
+
+An internal API used to recalculate and apply the padding for separator alignments.
+
+### refreshText()
+
+Makes the content of the popup reflect the stored options.
 
 ### close()
 
@@ -87,13 +134,6 @@ Note that this is called automatically and not intended for external use.
 Gets the text of the popup as an array of strings where each element is a new line.
 
 *return (`string[]`):* The text of the popup.
-
-### setText(text)
-
-Sets the text of the popup.
-
-_parameters:_
-- `Line[]` or `string[]` text: The new text for the popup.
 
 ### updateText()
 
@@ -111,13 +151,6 @@ Gets the buffer id of the popup.
 
 *return (`integer`):* The buffer id of the popup.
 
-### setModifiable(value)
-
-Sets the modifiable buffer option to the given value.
-
-_parameters:_
-- `boolean` value: The value to set the modifiable buffer option to.
-
 ### getModifiable()
 
 Returns the whether or not the buffer is modifiable.
@@ -132,7 +165,7 @@ _parameters:_
 - `string` mode: The vim mode the keymap applies to.
 - `string` lhs: The keystring being mapped.
 - `string` or `function` rhs: They keystring or callback to replace lhs with.
-- `table` opts: See Neovim [Docs](https://neovim.io/doc/user/api.html#nvim_set_keymap()) (excluding callback field)
+- `table` opts: See [Neovim Docs](https://neovim.io/doc/user/api.html#nvim_set_keymap()) (excluding callback field)
 
 
 ### getWidth()

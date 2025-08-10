@@ -33,7 +33,7 @@ local ns = vim.api.nvim_create_namespace("oneup")
 ---@field previous_bind string[]|string|nil
 
 ---@param opts OptionsPopupOpts the options for the given popup
----@param enter boolean whether or not to immediately focus the popup
+---@param enter? boolean whether or not to immediately focus the popup
 function OptionsPopup:new(opts, enter)
     local text = {}
     for _, _ in pairs(opts.options) do
@@ -280,7 +280,7 @@ function OptionsPopup:refreshText()
 
 end
 
-OptionsPopup.set_text = nil
-OptionsPopup.set_modifiable = nil
+OptionsPopup.setText = nil
+OptionsPopup.setModifiable = nil
 
 return OptionsPopup
