@@ -54,7 +54,7 @@ function PromptPopup:new(opts, enter)
     vim.fn.prompt_setcallback(buf, function (text)
         Popup.setText(out, out.text) ---@diagnostic disable-line: invisible
         vim.api.nvim_win_call(out:winId(), function()
-            vim.cmd("normal! zb")
+            vim.cmd("noautocmd normal! zb")
         end)
         if out.verify_input ~= nil then
             if not out.verify_input(text) then
