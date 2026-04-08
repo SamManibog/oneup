@@ -61,7 +61,7 @@ function PromptPopup:new(opts, enter)
                 vim.api.nvim_buf_set_lines(
                     buf,
                     ---@diagnostic disable-next-line: invisible
-                    #vim.api.nvim_buf_get_lines(out:bufId(), 0, -1, false),
+                    #vim.api.nvim_buf_get_lines(buf, 0, -1, false),
                     -1,
                     false,
                     {}
