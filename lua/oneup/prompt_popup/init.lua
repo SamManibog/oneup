@@ -4,6 +4,7 @@ local utils = require("oneup.utils")
 ---@class PromptPopup: Popup
 ---@field verify_input (fun(text:string):boolean)?,     function used to verify input before confirm function is ran
 ---@field on_confirm fun(text:string),                  function used to process input
+---@field private block_close bool                      block popup from closing once, used for handling invalid form submissions
 local PromptPopup = {}
 PromptPopup.__index = PromptPopup
 setmetatable(PromptPopup, Popup)
@@ -41,6 +42,7 @@ function PromptPopup:new(opts, enter)
     local out = Popup:new(base_opts, enter) ---@diagnostic disable-line: assign-type-mismatch
     out.verify_input = opts.verify_input
     out.on_confirm = opts.on_confirm
+    out.block_close = false
 
     local buf = out:bufId()
     utils.setBufOpts(
@@ -52,6 +54,7 @@ function PromptPopup:new(opts, enter)
     )
     vim.fn.prompt_setprompt(buf, opts.prompt or "")
     vim.fn.prompt_setcallback(buf, function (text)
+        out.block_close = true
         Popup.setText(out, out.text) ---@diagnostic disable-line: invisible
         vim.api.nvim_win_call(out:winId(), function()
             vim.cmd("noautocmd normal! zb")
@@ -82,7 +85,11 @@ function PromptPopup:new(opts, enter)
             },
             {
                 callback = function ()
-                    out:close()
+                    if out.block_close then
+                        out.block_close = false
+                    else
+                        out:close()
+                    end
                 end
             }
         )
