@@ -1,6 +1,6 @@
-# Oneup
+# OneUp
 
-Oneup is a simple popup gui library that originated from within my Neovim config.
+OneUp is a single-pane gui-library for NeoVim.
 
 ## Usage
 
